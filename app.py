@@ -3,25 +3,28 @@ import mysql.connector
 import os
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = os.environ.get('SECRET_KEY', os.urandom(24))  # Secret key from environment for security
 
-# Database connection
-conn = mysql.connector.connect(
-    host='sql12.freesqldatabase.com',
-    user='sql12741246',
-    password='2XqTdR7LCV',
-    database='sql12741246',
-    port=3306
-)
+# Database connection function
+def get_db_connection():
+    return mysql.connector.connect(
+        host=os.environ.get('DB_HOST', 'sql12.freesqldatabase.com'),
+        user=os.environ.get('DB_USER', 'sql12741246'),
+        password=os.environ.get('DB_PASSWORD', '2XqTdR7LCV'),
+        database=os.environ.get('DB_NAME', 'sql12741246'),
+        port=int(os.environ.get('DB_PORT', 3306))
+    )
 
 @app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         username = request.form['username']
         
+        conn = get_db_connection()
         cursor = conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM Users WHERE UserName = %s", (username,))
         user = cursor.fetchone()
+        conn.close()
         
         if user:
             session['user'] = user['UserName']
@@ -35,9 +38,11 @@ def agreements():
     if 'user' not in session:
         return redirect(url_for('login'))
 
+    conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM PA_Header")
     agreements = cursor.fetchall()
+    conn.close()
     
     return render_template('agreements.html', agreements=agreements)
 
@@ -46,6 +51,7 @@ def agreement_details(agreement_id):
     if 'user' not in session:
         return redirect(url_for('login'))
 
+    conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
     if request.method == 'POST':
@@ -65,10 +71,9 @@ def agreement_details(agreement_id):
                                (new_cost, session['user'], agreement_id, sku_number))
 
         conn.commit()
-        return redirect(url_for('agreements'))
-
     cursor.execute("SELECT * FROM PA_Detail WHERE Agreement_No = %s", (agreement_id,))
     records = cursor.fetchall()
+    conn.close()
     
     return render_template('agreement_details.html', records=records, agreement_id=agreement_id)
 
@@ -77,17 +82,21 @@ def audit():
     if 'user' not in session:
         return redirect(url_for('login'))
 
+    conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("SELECT * FROM PA_Audit")
     audits = cursor.fetchall()
+    conn.close()
     
     return render_template('audit.html', audits=audits)
 
 @app.route('/audit/delete/<int:audit_id>', methods=['POST'])
 def delete_audit(audit_id):
+    conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM PA_Audit WHERE Audit_ID = %s", (audit_id,))
     conn.commit()
+    conn.close()
     return redirect(url_for('audit'))
 
 @app.route('/logout')
@@ -95,9 +104,6 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('login'))
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
+# Host and port for Render deployment
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
