@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit Records</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Audit Records</h1>
+    </header>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Audit ID</th>
+                    <th>Agreement No</th>
+                    <th>SKU Number</th>
+                    <th>Old Cost</th>
+                    <th>New Cost</th>
+                    <th>Updated By</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for audit in audits %}
+                <tr>
+                    <td>{{ audit.Audit_ID }}</td>
+                    <td>{{ audit.Agreement_No }}</td>
+                    <td>{{ audit.SKU_Number }}</td>
+                    <td>{{ audit.Old_Cost }}</td>
+                    <td>{{ audit.New_Cost }}</td>
+                    <td>{{ audit.UpdatedBy }}</td>
+                    <td>
+                        <form action="{{ url_for('delete_audit', audit_id=audit.Audit_ID) }}" method="POST" style="display:inline;">
+                            <button type="submit">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <form action="{{ url_for('agreements') }}" method="get" style="margin-top: 20px;">
+            <button type="submit">Back to Agreements</button>
+        </form>
+        <form action="{{ url_for('logout') }}" method="get" style="margin-top: 20px;">
+            <button type="submit">Logout</button>
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agreements</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Agreements</h1>
+    </header>
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Agreement No</th>
+                    <th>Agreement Value</th>
+                    <th>Customer Name</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for agreement in agreements %}
+                <tr>
+                    <td>{{ agreement.Agreement_No }}</td>
+                    <td>{{ agreement.Agreement_Value }}</td>
+                    <td>{{ agreement.Customer_Name }}</td>
+                    <td>
+                        <a href="{{ url_for('agreement_details', agreement_id=agreement.Agreement_No) }}">Edit</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div style="margin-top: 20px;">
+            <form action="{{ url_for('audit') }}" method="get" style="display:inline;">
+                <button type="submit">View Audit Records</button>
+            </form>
+            <form action="{{ url_for('logout') }}" method="get" style="display:inline;">
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
