@@ -2,47 +2,45 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agreement Details</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <header>
-        <h1>Agreement Details</h1>
-    </header>
-    <div class="container">
-        <form method="POST">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Product Line</th>
-                        <th>SKU Number</th>
-                        <th>Cost</th>
-                        <th>New Cost</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in records %}
-                    <tr>
-                        <td>{{ record.ProductLine }}</td>
-                        <td>{{ record.SKU_Number }}</td>
-                        <td>{{ record.Cost }}</td>
-                        <td>
-                            <input type="text" name="new_costs" placeholder="Enter new cost" />
-                            <input type="hidden" name="sku_numbers" value="{{ record.SKU_Number }}" />
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            <button type="submit">Save Changes</button>
-        </form>
-        <form action="{{ url_for('agreements') }}" method="get" style="margin-top: 20px;">
-            <button type="submit">Back to Agreements</button>
-        </form>
-        <form action="{{ url_for('logout') }}" method="get" style="margin-top: 20px;">
-            <button type="submit">Logout</button>
-        </form>
-    </div>
+    <h1>Agreement Details for Agreement No. {{ agreement_id }}</h1>
+
+    <!-- Table for showing agreement details -->
+    <table>
+        <thead>
+            <tr>
+                <th>SKU Number</th>
+                <th>Cost</th>
+                <th>New Cost</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.SKU_Number }}</td>
+                <td>{{ record.Cost }}</td>
+                <td>
+                    <form action="{{ url_for('agreement_details', agreement_id=agreement_id) }}" method="post">
+                        <input type="text" name="new_costs" value="{{ record.New_Cost }}" />
+                        <input type="hidden" name="sku_numbers" value="{{ record.SKU_Number }}" />
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Button to view audit records -->
+    <form action="{{ url_for('audit') }}" method="get" style="margin-top: 20px;">
+        <button type="submit">View Audit Records</button>
+    </form>
+
+    <!-- Submit button for saving new costs -->
+    <button type="submit" form="update-form">Save Changes</button>
+    
+    <a href="{{ url_for('agreements') }}">Back to Agreements</a>
 </body>
 </html>

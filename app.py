@@ -63,14 +63,25 @@ def agreement_details(agreement_id):
             
             if new_cost:
                 sku_number = sku_numbers[i]
-                cursor.execute("UPDATE PA_Detail SET New_Cost = %s WHERE Agreement_No = %s AND SKU_Number = %s", 
-                               (new_cost, agreement_id, sku_number))
+                
+                # Update both New_Cost and Cost columns
+                cursor.execute("""
+                    UPDATE PA_Detail 
+                    SET New_Cost = %s, Cost = %s 
+                    WHERE Agreement_No = %s AND SKU_Number = %s
+                """, (new_cost, new_cost, agreement_id, sku_number))
 
-                cursor.execute("INSERT INTO PA_Audit (Agreement_No, SKU_Number, Old_Cost, New_Cost, UpdatedBy) "
-                               "SELECT Agreement_No, SKU_Number, Cost, %s, %s FROM PA_Detail WHERE Agreement_No = %s AND SKU_Number = %s",
-                               (new_cost, session['user'], agreement_id, sku_number))
+                # Insert the audit entry
+                cursor.execute("""
+                    INSERT INTO PA_Audit (Agreement_No, SKU_Number, Old_Cost, New_Cost, UpdatedBy)
+                    SELECT Agreement_No, SKU_Number, Cost, %s, %s 
+                    FROM PA_Detail 
+                    WHERE Agreement_No = %s AND SKU_Number = %s
+                """, (new_cost, session['user'], agreement_id, sku_number))
 
         conn.commit()
+
+    # Fetch the updated records for display
     cursor.execute("SELECT * FROM PA_Detail WHERE Agreement_No = %s", (agreement_id,))
     records = cursor.fetchall()
     conn.close()
@@ -105,5 +116,10 @@ def logout():
     return redirect(url_for('login'))
 
 # Host and port for Render deployment
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+# Host and port for Render deployment
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+    app.run(debug=True)
